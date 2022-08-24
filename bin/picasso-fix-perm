@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#find . \( -name "*.pickle" -o -name "*.yaml" -o -name "*.map" -o -name "*.xml" -o -name "*.XML" -o -name "*.bin" -o -name "*.hex" -o -name "*.timg" -o -name "*.lst" -o -name "**.icf" -o -name "*.txt" -o -name "*.cpp" -o -name "*.hpp" -o -name "*.hdr" -o -name "*.ewp" -o -name "*.ewt" \) -exec chmod a+rw {} \+
+find . -type f -exec chmod a+rw {} \+

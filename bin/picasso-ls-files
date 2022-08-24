@@ -1,0 +1,42 @@
+#!/bin/bash
+
+PARAMS=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -t|--target)
+            if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                TARGET=$2
+                shift 2
+            else
+                echo "argument for $1 is missing" >&2
+                exit 1
+            fi
+            ;;
+        -c|--config)
+            if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                CONFIG=$2
+                shift 2
+            else
+                echo "argument for $1 is missing" >&2
+                exit 1
+            fi
+            ;;
+        -*|--*)
+            echo "unsuported flag $1" >&2
+            exit 1
+            ;;
+        *)
+            PARAMS="$PARAMS $1"
+            shift
+            ;;
+    esac
+done
+eval set -- "$PARAMS"
+
+if [ -z "$TARGET" ]  || [ -z "$CONFIG" ]; then
+    echo "target and config need to be specified with -t and -c"
+    exit 1
+fi
+
+find . -path "*$TARGET/System/$CONFIG*.lst" -exec pcregrep -M "Source file\s+=.*(\n|.).*\.c" {} \; \
+    | sed -En 's/.*\s(.*\.(c|cpp))/\1/p' | sed 's#\\#/#g'

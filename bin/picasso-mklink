@@ -1,0 +1,13 @@
+#!/bin/bash
+
+cwd=""
+if ls -d Product/7_EXE >/dev/null; then
+    cwd=`pwd`
+    cd Product/7_EXE
+fi
+cmd /c 'mklink E360LTE3Ph E3553Ph'
+cmd /c 'mklink E360LTE1Ph E3551Ph'
+cmd /c 'mklink E360Test3Ph E355Test3Ph'
+if [ -n "$cwd" ]; then
+    cd "$cwd"
+fi

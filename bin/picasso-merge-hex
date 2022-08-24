@@ -1,0 +1,98 @@
+#!/bin/bash
+
+target=
+config=
+with_modules=no
+
+PARAMS=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -t|--target)
+            if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                target=$2
+                shift 2
+            else
+                echo "argument for $1 is missing" >&2
+                exit 1
+            fi
+            ;;
+        -c|--config)
+            if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+                config=$2
+                shift 2
+            else
+                echo "argument for $1 is missing" >&2
+                exit 1
+            fi
+            ;;
+        -m|--with-modules)
+            with_modules=yes
+            shift 1
+            ;;
+        *)
+            PARAMS="$PARAMS $1"
+            shift
+            ;;
+    esac
+done
+eval set -- "$PARAMS"
+
+if [ ! -n "$target" ]; then
+    echo no target specified
+    exit 1
+fi
+if [ ! -n "$config" ]; then
+    echo no config specified
+    exit 1
+fi
+
+root="Product/7_EXE/${target}"
+
+if [ ! -d "$root" ]; then
+    echo target not found
+    exit 1
+fi
+
+bootldr=`find ${root} -path "*${config}*Boot[Ll]oader.hex"`
+system=`find ${root} -path "*${config}*System.hex"`
+
+echo "use bootloader ${bootldr}"
+echo "use system ${system}"
+
+if [ ! -f "$bootldr" ]; then
+    echo boot loader not found: $bootldr
+    exit 1
+fi
+if [ ! -f "$system" ]; then
+    echo system file not found
+    exit 1
+fi
+
+modules_opt=""
+if [ "$with_modules" == "yes" ]; then
+    for n in `seq 3`; do
+        module=`find ${root} -path "*${config}*Module$n.hex"`
+        echo "use module ${module}"
+        modules_opt="${modules_opt}${module}  -intel "
+    done
+fi
+
+commit=`git log | head -n1 | cut -d' ' -f2`
+commit=`echo ${commit:0:7}`
+
+cd Platform
+commit_platform=`git log | head -n1 | cut -d' ' -f2`
+commit_platform=`echo ${commit_platform:0:7}`
+cd ..
+
+dirty=''
+#if ! git status | grep 'working tree clean' >/dev/null ; then
+#    dirty='-dirty'
+#fi
+
+name=combined-${target}-${config}-${commit}${dirty}-${commit_platform}-`date +%Y%m%d-%H%M`
+srec_cat ${bootldr} -intel \
+    ${system} -intel \
+    ${modules_opt} \
+    -o $name.hex -intel \
+    --line-length=44
