@@ -52,4 +52,20 @@ if [ -f "$work_dir" ]; then
     exit 1
 fi
 
-git clone --recurse-submodules -b $branch ${repo_path} "$work_dir"
+git clone -b $branch ${repo_path} "$work_dir"
+
+cd "$work_dir"
+git submodule init
+sed -i 's/gerrit-eu.landisgyr.net/git-agent\/picasso-git-mirror/g' .git/config
+git submodule update
+
+cd Platform
+git submodule init
+sed -i 's/gerrit-eu.landisgyr.net/git-agent\/picasso-git-mirror/g' \
+    ../.git/modules/Platform/config
+git submodule update
+
+cd ..
+git remote add gerrit-eu \
+    ssh://gerrit-eu.landisgyr.net/Picasso_Products.git
+
