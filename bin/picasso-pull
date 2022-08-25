@@ -1,0 +1,55 @@
+#!/usr/bin/bash
+
+# Pull picasso code with specified repo and branch, update the embedded
+# submodules, and create a clean work tree
+
+list_only=no
+
+PARAMS=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -l|--list)
+            list_only=yes
+            shift
+            ;;
+        -*|--*)
+            echo "unsuported flag $1" >&2
+            exit 1
+            ;;
+        *)
+            PARAMS="$PARAMS $1"
+            shift
+            ;;
+    esac
+done
+eval set -- "$PARAMS"
+
+GIT_URL_ROOT="ssh://git-agent/picasso-git-mirror"
+
+repo=$1
+branch=$2
+work_dir=$3
+
+if [ -z "$repo" ]; then
+    echo repo name missed
+    exit 1
+fi
+
+repo_path=${GIT_URL_ROOT}/${repo}.git
+
+if [ "$list_only" = "yes" ]; then
+    git ls-remote -h ${repo_path}
+    exit 0
+fi
+
+if [ -z "$branch" ] || [ -z "$work_dir" ]; then
+    echo insufficient arguments
+    exit 1
+fi
+
+if [ -f "$work_dir" ]; then
+    echo "$work_dir already existed"
+    exit 1
+fi
+
+git clone --recurse-submodules -b $branch ${repo_path} "$work_dir"
