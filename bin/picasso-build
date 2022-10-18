@@ -2,6 +2,7 @@
 
 config=debug
 target=
+mcu=
 do_clean=no
 do_pull=no
 pull_with_del=no
@@ -24,6 +25,11 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
+        -m|--mcu)
+            extra_scons_opts+=" --mcu="$2
+            shift
+            shift
+            ;;
         -x|--clean)
             do_clean=yes
             shift
@@ -42,7 +48,7 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -e|--extra)
-            extra_scons_opts+="$2"
+            extra_scons_opts+=" $2"
             shift
             shift
             ;;
@@ -56,7 +62,11 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -l)
-            extra_scons_opts+="--printLogByUart"
+            extra_scons_opts+=" --printLogByUart"
+            shift
+            ;;
+        -W|--swap-opto)
+            extra_scons_opts+=" --swap-opto"
             shift
             ;;
         -*|--*)
@@ -101,10 +111,10 @@ else
     hwopt="--e360hw=4" 
 fi
 
-echo WITH_E355_LOCAL_TARGETS=1 scons -u -j${n_parallel} config=$config $ci_build --debug=time target=$target ${hwopt} \
+echo scons -u -j${n_parallel} --local-build config=$config $ci_build --debug=time target=$target ${hwopt} \
     ${extra_scons_opts} 2>&1 \
     | tee -a ${logfile}
-WITH_E355_LOCAL_TARGETS=1 scons -u -j${n_parallel} config=$config $ci_build --debug=time --fupKey=Development target=$target ${hwopt} \
+scons -u -j${n_parallel} --local-build config=$config $ci_build --debug=time --fupKey=Development target=$target ${hwopt} \
     ${extra_scons_opts} 2>&1 \
     | tee -a ${logfile}
 

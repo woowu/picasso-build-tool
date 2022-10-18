@@ -12,6 +12,12 @@ while [ $# -gt 0 ]; do
             list_only=yes
             shift
             ;;
+        -h|--help)
+            echo Usage: `basename $0` repo branch work-dir
+            echo Example: `basename $0` E355 E355-release-2.0 fix-foo-bug
+            shift
+            exit 0
+            ;;
         -*|--*)
             echo "unsuported flag $1" >&2
             exit 1
