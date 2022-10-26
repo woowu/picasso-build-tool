@@ -1,0 +1,112 @@
+#!/bin/bash
+
+config=debug
+target=
+do_clean=no
+do_pull=no
+pull_with_del=no
+pull_dir=
+extra_scons_opts=
+n_parallel=`nproc`
+ci_build="--ci-build"
+hwopt=
+
+PARAMS=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -t|--target)
+            target=$2
+            shift
+            shift
+            ;;
+        -c|--config)
+            config=$2
+            shift
+            shift
+            ;;
+        -x|--clean)
+            do_clean=yes
+            shift
+            ;;
+        -p|--pull)
+            do_pull=yes
+            shift
+            ;;
+        --pull-dir)
+            pull_dir=$2
+            shift
+            shift
+            ;;
+        -d|--delete)
+            pull_with_del=yes
+            shift
+            ;;
+        -e|--extra)
+            extra_scons_opts+="$2"
+            shift
+            shift
+            ;;
+        -I|--no-ci-build)
+            ci_build=""
+            shift
+            ;;
+        -j)
+            n_parallel=$2
+            shift
+            shift
+            ;;
+        -l)
+            extra_scons_opts+="--printLogByUart"
+            shift
+            ;;
+        -*|--*)
+            echo "unsuported flag $1" >&2
+            exit 1
+            ;;
+        *)
+            PARAMS="$PARAMS $1"
+            shift
+            ;;
+    esac
+done
+eval set -- "$PARAMS"
+
+if [ -z "$target" ]; then
+    echo "no target specified"
+    exit 1
+fi
+
+logfile=${target}.${config}.log
+
+if [ "$do_clean" = "yes" ]; then
+    picasso-clean
+    picasso-fix-perm
+fi
+
+echo "start building at `date`" | tee -a "$logfile"
+if [ "$do_pull" = "yes" ]; then
+    pull_opts=""
+    if [ "$pull_with_del" = "yes" ]; then
+        pull_opts+=" -d"
+    fi
+    if [ -n "$pull_dir" ]; then
+        pull_opts+=" ${pull_dir}"
+    fi
+    picasso-pull ${pull_opts} | grep "^.f" 2>&1 | tee -a "$logfile"
+fi
+
+if grep -q "3Ph" <<< $target ; then
+    hwopt="--e360hw3ph=4" 
+else
+    hwopt="--e360hw=4" 
+fi
+
+echo WITH_E355_LOCAL_TARGETS=1 scons -u -j${n_parallel} config=$config $ci_build --debug=time target=$target ${hwopt} \
+    ${extra_scons_opts} 2>&1 \
+    | tee -a ${logfile}
+WITH_E355_LOCAL_TARGETS=1 scons -u -j${n_parallel} config=$config $ci_build --debug=time --fupKey=Development target=$target ${hwopt} \
+    ${extra_scons_opts} 2>&1 \
+    | tee -a ${logfile}
+
+echo "end building at `date`" | tee -a "$logfile"
+
