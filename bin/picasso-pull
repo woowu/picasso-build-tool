@@ -75,9 +75,13 @@ cd ..
 git remote add gerrit-eu \
     ssh://gerrit-eu.landisgyr.net/Picasso_Products.git
 
-for dir in "Platform/Product/7_EXE/Ref_MMI3" "Platform/Product/7_EXE/Ref_IMS1" ; do
-if [ -d "$dir/BootLoader" ] && [ -d "$dir/BootLoader" ]; then
-    echo fixing bad directory name in platform $dir/BootLoader
-    cp -r "$dir/BootLoader/*" "$dir/Bootloader/"
-    rm -rf "$dir/BootLoader"
-fi
+# Inside Platform folder, there are some LowerCase/UpperCase mess-up of
+# filenames.
+
+for dir in Platform/Product/7_EXE/Ref_MMI3 Platform/Product/7_EXE/Ref_IMS1 ; do
+    if [ -d "$dir/BootLoader" ] && [ -d "$dir/Bootloader" ]; then
+        echo fixing bad directory name in platform $dir/BootLoader
+        cp -r $dir/BootLoader/* $dir/Bootloader/
+        rm -rf "$dir/BootLoader"
+    fi
+done
