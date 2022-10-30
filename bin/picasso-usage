@@ -1,8 +1,8 @@
 #!/bin/bash
 
 target=$1
-find Product/7_EXE/$target/ \( -path "*release/System.out" -o -path "*release/Module*.out" \) \
+find Product/7_EXE/$target/ \( -path "*release/System.out" -o -path "*release/Module[0-9].out" \) \
     -exec size {} \+
-find Product/7_EXE/$target/ \( -path "*release/System.out" -o -path "*release/Module*.out" \) \
+find Product/7_EXE/$target/ \( -path "*release/System.out" -o -path "*release/Module[0-9].out" \) \
     -exec size {} \+ \
     | awk 'NR > 1 { rom+=$1; ram+=($2+$3) } END { printf "ROM/RAM: %.3f M / %.3f K\n", rom/1024/1024, ram/1024 }'
