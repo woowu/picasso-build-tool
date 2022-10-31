@@ -4,6 +4,15 @@ target=
 config=
 with_modules=no
 
+get_firmware_id() {
+    version_file=$1
+    mod=$2
+    cat "$version_file" \
+        | sed -n "/^${mod}:/,/CurrentVersion:/p" \
+        | grep CurrentVersion: | head -1 \
+        | sed "s/.*'\(.*\)'.*/\1/"
+}
+
 PARAMS=""
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -68,12 +77,16 @@ if [ ! -f "$system" ]; then
     exit 1
 fi
 
+combined_id=$(get_firmware_id $root/productVersionInfo.yaml "Bootloader")
+combined_id=${combined_id}_$(get_firmware_id $root/productVersionInfo.yaml "System")
+    
 modules_opt=""
 if [ "$with_modules" == "yes" ]; then
     for n in `seq 3`; do
         module=`find ${root} -path "*${config}*Module$n.hex"`
         echo "use module ${module}"
         modules_opt="${modules_opt}${module}  -intel "
+        combined_id=${combined_id}_$(get_firmware_id $root/productVersionInfo.yaml "Module${n}")
     done
 fi
 
@@ -85,12 +98,7 @@ commit_platform=`git log | head -n1 | cut -d' ' -f2`
 commit_platform=`echo ${commit_platform:0:7}`
 cd ..
 
-dirty=''
-#if ! git status | grep 'working tree clean' >/dev/null ; then
-#    dirty='-dirty'
-#fi
-
-name=combined-${target}-${config}-${commit}${dirty}-${commit_platform}-`date +%Y%m%d-%H%M`
+name=combined-${target}-${config}-${combined_id}-`date +%Y%m%d-%H%M`
 srec_cat ${bootldr} -intel \
     ${system} -intel \
     ${modules_opt} \
