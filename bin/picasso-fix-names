@@ -4,8 +4,9 @@
 # filenames.
 
 for dir in Platform/Product/7_EXE/Ref_MMI3 Platform/Product/7_EXE/Ref_IMS1 ; do
+    echo "fixing bad directory name in platform"
     if [ -d "$dir/BootLoader" ] && [ -d "$dir/Bootloader" ]; then
-        echo "fixing bad directory name in platform $dir/BootLoader"
+        echo "$dir/BootLoader"
         cp -r $dir/BootLoader/* $dir/Bootloader/
         rm -rf "$dir/BootLoader"
     fi
