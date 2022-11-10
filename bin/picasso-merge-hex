@@ -3,6 +3,7 @@
 target=
 config=
 with_modules=no
+mcu=
 
 get_firmware_id() {
     version_file=$1
@@ -10,7 +11,7 @@ get_firmware_id() {
     cat "$version_file" \
         | sed -n "/^${mod}:/,/CurrentVersion:/p" \
         | grep CurrentVersion: | head -1 \
-        | sed "s/.*'\(.*\)'.*/\1/"
+        | sed -n 's/.*\(U[^\s]*\).*/\1/p'
 }
 
 PARAMS=""
@@ -37,6 +38,10 @@ while [ $# -gt 0 ]; do
         -m|--with-modules)
             with_modules=yes
             shift 1
+            ;;
+        -M|--mcu)
+            mcu=$2
+            shift 2
             ;;
         *)
             PARAMS="$PARAMS $1"
@@ -77,8 +82,18 @@ if [ ! -f "$system" ]; then
     exit 1
 fi
 
-combined_id=$(get_firmware_id $root/productVersionInfo.yaml "Bootloader")
-combined_id=${combined_id}_$(get_firmware_id $root/productVersionInfo.yaml "System")
+if [ -z $mcu ]; then
+    version_file=$root/productVersionInfo.yaml
+else
+    version_file=$root/productVersionInfo.$mcu.yaml
+fi
+if [ ! -f ${version_file} ]; then
+    echo ${version_file} not found
+    exit 1
+fi
+echo using version file ${version_file}
+combined_id=$(get_firmware_id ${version_file} "Bootloader")
+combined_id=${combined_id}_$(get_firmware_id ${version_file} "System")
     
 modules_opt=""
 if [ "$with_modules" == "yes" ]; then
@@ -86,7 +101,7 @@ if [ "$with_modules" == "yes" ]; then
         module=`find ${root} -path "*${config}*Module$n.hex"`
         echo "use module ${module}"
         modules_opt="${modules_opt}${module}  -intel "
-        combined_id=${combined_id}_$(get_firmware_id $root/productVersionInfo.yaml "Module${n}")
+        combined_id=${combined_id}_$(get_firmware_id ${version_file} "Module${n}")
     done
 fi
 
@@ -99,6 +114,7 @@ commit_platform=`echo ${commit_platform:0:7}`
 cd ..
 
 name=combined-${target}-${config}-${combined_id}-`date +%Y%m%d-%H%M`
+echo $name
 srec_cat ${bootldr} -intel \
     ${system} -intel \
     ${modules_opt} \
