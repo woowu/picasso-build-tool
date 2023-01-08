@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ $OSTYPE != 'msys' ]; then
+    echo unsupported OS type
+    exit 1
+fi
+
 cwd=""
 if ls -d Product/7_EXE >/dev/null; then
     cwd=`pwd`
