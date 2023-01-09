@@ -62,7 +62,7 @@ while [ $# -gt 0 ]; do
             ci_build=""
             shift
             ;;
-        -l|--local)
+        --local)
             local_build="--local-build"
             shift
             ;;
