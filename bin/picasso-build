@@ -13,6 +13,11 @@ ci_build="--ci-build"
 local_build=
 hwopt=
 
+n_parallel=$((n_parallel - 2))
+if [ $n_parallel -lt 1 ]; then
+    n_parallel=1
+fi
+
 PARAMS=""
 while [ $# -gt 0 ]; do
     case "$1" in
