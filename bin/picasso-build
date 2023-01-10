@@ -123,10 +123,11 @@ fi
 
 echo scons -u -j${n_parallel} $local_build config=$config $ci_build --debug=time target=$target ${hwopt} \
     ${extra_scons_opts} 2>&1 \
-    | tr -d '\r' | tee -a ${logfile}
+    | tee -a ${logfile}
 /c/Python39/Scripts/scons -u -j${n_parallel} $local_build config=$config $ci_build --debug=time --fupKey=Development target=$target ${hwopt} \
     ${extra_scons_opts} 2>&1 \
-    | tr -d '\r' | tee -a ${logfile}
+    | tee -a ${logfile}
+dos2unix ${logfile}
 
 echo "end building at `date`" | tee -a "$logfile"
 
