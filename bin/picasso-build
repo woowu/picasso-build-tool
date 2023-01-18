@@ -96,14 +96,12 @@ if [ -z "$target" ]; then
     exit 1
 fi
 
-logfile=${target}.${config}.log
-
 if [ "$do_clean" = "yes" ]; then
     picasso-clean
     picasso-fix-perm
 fi
 
-echo "start building at `date`" | tee -a "$logfile"
+echo "start building at `date`" | tee /tmp/picasso-build.log
 if [ "$do_pull" = "yes" ]; then
     pull_opts=""
     if [ "$pull_with_del" = "yes" ]; then
@@ -112,7 +110,7 @@ if [ "$do_pull" = "yes" ]; then
     if [ -n "$pull_dir" ]; then
         pull_opts+=" ${pull_dir}"
     fi
-    picasso-pull ${pull_opts} | grep "^.f" 2>&1 | tee -a "$logfile"
+    picasso-pull ${pull_opts} | grep "^.f" 2>&1 | tee -a /tmp/picasso-build.log
 fi
 
 if grep -q "3Ph" <<< $target ; then
@@ -129,5 +127,6 @@ echo scons -u -j${n_parallel} $local_build config=$config $ci_build --debug=time
     | tee -a /tmp/picasso-build.log
 
 echo "end building at `date`" | tee -a /tmp/picasso-build.log
-sed 's/^M$//' /tmp/picasso-build.log >> ${logfile}
+logfile=${target}.${config}.log
+sed 's/^M$//' /tmp/picasso-build.log > ${logfile}
 
