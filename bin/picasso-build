@@ -12,6 +12,7 @@ n_parallel=`nproc`
 ci_build="--ci-build"
 local_build=
 hwopt=
+deploy_dir=~/picasso-firmware-builds/local
 
 n_parallel=$((n_parallel - 2))
 if [ $n_parallel -lt 1 ]; then
@@ -119,14 +120,36 @@ else
     hwopt="--e360hw=4" 
 fi
 
-echo scons -u -j${n_parallel} $local_build config=$config $ci_build --debug=time target=$target ${hwopt} \
-    ${extra_scons_opts} 2>&1 \
+echo scons -u -j${n_parallel} $local_build config=$config $ci_build \
+    --debug=time target=$target ${hwopt} ${extra_scons_opts} 2>&1 \
     | tee -a /tmp/picasso-build.log
-/c/Python39/Scripts/scons -u -j${n_parallel} $local_build config=$config $ci_build --debug=time --fupKey=Development target=$target ${hwopt} \
+/c/Python39/Scripts/scons -u -j${n_parallel} $local_build config=$config \
+    $ci_build --debug=time --fupKey=Development target=$target ${hwopt} \
     ${extra_scons_opts} 2>&1 \
     | tee -a /tmp/picasso-build.log
 
-echo "end building at `date`" | tee -a /tmp/picasso-build.log
+end_time=`date`
+echo "end building at ${end_time}" | tee -a /tmp/picasso-build.log
+
 logfile=${target}.${config}.log
 sed 's/^M$//' /tmp/picasso-build.log > ${logfile}
 
+if grep "building terminated because of errors" ${logfile} >/dev/null ; then
+    exit 1
+fi
+
+echo Copying artifacts
+timestamp=`date +%Y%m%dT%H%M`
+if [ -z deploy_dir ]; then
+    exit
+fi
+dst_dir=${deploy_dir}/${target}/${config}/${timestamp}
+mkdir -p ${dst_dir}
+
+cp Product/7_EXE/${target}/System/_out/${config}/System.out ${dst_dir}/
+cp Product/7_EXE/${target}/System/_out/${config}/Module1.out ${dst_dir}/
+cp Product/7_EXE/${target}/System/_out/${config}/Module2.out ${dst_dir}/
+cp Product/7_EXE/${target}/System/_out/${config}/Module3.out ${dst_dir}/
+cp Product/7_EXE/${target}/System/_out/${config}/BootLoader.out ${dst_dir}/
+
+echo done
