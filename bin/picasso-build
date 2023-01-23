@@ -111,14 +111,16 @@ function copy_artifacts () {
 
     # Two rooms in each hour
     #
-    time=`date +%Y%m%dT%H%M`
-    m=${time: -2}
-    head=${time:0:11}
-    if [ $m -ge 30 ]; then
-        timestamp=${head}"30"
-    else
-        timestamp=${head}"00"
-    fi
+    #time=`date +%Y%m%dT%H%M`
+    #m=${time: -2}
+    #head=${time:0:11}
+    #if [ $m -ge 30 ]; then
+    #    timestamp=${head}"30"
+    #else
+    #    timestamp=${head}"00"
+    #fi
+
+    timestamp=`date +%Y%m%dT%H0000`
 
     dst_dir=${deploy_dir}/${target}/${config}/${timestamp}
     mkdir -p ${dst_dir}
