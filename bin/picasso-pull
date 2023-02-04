@@ -4,6 +4,7 @@
 # submodules, and create a clean work tree
 
 list_only=no
+commit=
 
 PARAMS=""
 while [ $# -gt 0 ]; do
@@ -17,6 +18,11 @@ while [ $# -gt 0 ]; do
             echo Example: `basename $0` E355 E355-release-2.0 fix-foo-bug
             shift
             exit 0
+            ;;
+        -c|--commit)
+            commit=$2
+            shift
+            shift
             ;;
         -*|--*)
             echo "unsuported flag $1" >&2
@@ -61,6 +67,10 @@ fi
 git clone -b $branch ${repo_path} "$work_dir"
 
 cd "$work_dir"
+if [ -n $commit ]; then
+    git checkout -b $commit $commit
+fi
+
 git submodule init
 sed -i 's/gerrit-eu.landisgyr.net/git-agent\/picasso-git-mirror/g' .git/config
 git submodule update
