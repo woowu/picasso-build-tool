@@ -9,7 +9,7 @@ pull_with_del=no
 pull_dir=
 extra_scons_opts=
 n_parallel=`nproc`
-ci_build="--ci-build"
+ci_build=""
 local_build=
 hwopt=
 deploy_dir=~/picasso-firmware-builds/local
@@ -61,8 +61,8 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
-        -I|--no-ci-build)
-            ci_build=""
+        -i|--ci-build)
+            ci_build="--ci-build"
             shift
             ;;
         --local)
