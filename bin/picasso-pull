@@ -67,7 +67,7 @@ fi
 git clone -b $branch ${repo_path} "$work_dir"
 
 cd "$work_dir"
-if [ -n $commit ]; then
+if [ -n "$commit" ]; then
     git checkout -b $commit $commit
 fi
 
@@ -84,8 +84,6 @@ git submodule update
 cd ..
 git remote add gerrit-eu \
     ssh://gerrit-eu.landisgyr.net/Picasso_Products.git
-
-picasso-fix-names # fix filename issues in Platform folder
 
 if [ ! -f .git/hooks/commit-msg ]; then
     echo create commit-msg hook
