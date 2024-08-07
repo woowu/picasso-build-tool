@@ -5,3 +5,13 @@ find . -type d -name "Log" -exec rm -rf {} \+
 find . -type d -name "__pycache__" -exec rm -rf {} \+
 find . \( -name "*.o" -o -name "*.bin" -o -name "*.out" -o -name "*.hex" -o -name "*.lst" -o -name "*.map" -o -name "*.d" \) -exec rm -f {} \+
 find . -name Generated -type d -exec rm -rf {} \;
+git restore -- Product/7_EXE/E3551Ph/Peripherals/Ims2Binary/Ims2Binary.bin
+git restore -- Product/7_EXE/E3553Ph/Peripherals/Ims2Binary/Ims2Binary.bin
+cd Platform
+git restore
+git clean -df .
+cd ..
+cd Platform/5_SVC/DLMS/ThirdParty/DlmsCore
+git restore
+git clean -df .
+cd ..

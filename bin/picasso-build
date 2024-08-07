@@ -20,6 +20,9 @@ n_parallel=$((n_parallel - 2))
 if [ $n_parallel -lt 1 ]; then
     n_parallel=1
 fi
+if [ $n_parallel -gt 12 ]; then
+    n_parallel=12
+fi
 
 PARAMS=""
 while [ $# -gt 0 ]; do
@@ -56,17 +59,33 @@ while [ $# -gt 0 ]; do
             pull_with_del=yes
             shift
             ;;
-        -e|--extra)
-            extra_scons_opts+=" $2"
-            shift
-            shift
-            ;;
         -i|--ci-build)
             ci_build="--ci-build"
             shift
             ;;
         --local)
             local_build="--local-build"
+            shift
+            ;;
+        -k)
+            extra_scons_opts+=" --fupKey=Development"
+            shift
+            ;;
+        -z)
+            extra_scons_opts+=" --compression-algo=LZSS"
+            shift
+            ;;
+        -l)
+            extra_scons_opts+=" --printLogByUart"
+            shift
+            ;;
+        -W|--swap-opto)
+            extra_scons_opts+=" --swap-opto"
+            shift
+            ;;
+        -e|--extra)
+            extra_scons_opts+=" $2"
+            shift
             shift
             ;;
         --copy-only)
@@ -76,14 +95,6 @@ while [ $# -gt 0 ]; do
         -j)
             n_parallel=$2
             shift
-            shift
-            ;;
-        -l)
-            extra_scons_opts+=" --printLogByUart"
-            shift
-            ;;
-        -W|--swap-opto)
-            extra_scons_opts+=" --swap-opto"
             shift
             ;;
         -P|--python)
@@ -168,11 +179,19 @@ function build () {
         hwopt="--e360hw=4" 
     fi
 
-    echo /c/$python_name/Scripts/scons -u -j${n_parallel} $local_build config=$config $ci_build \
-        --debug=time target=$target ${hwopt} ${extra_scons_opts} 2>&1 \
-        | tee -a /tmp/picasso-build.log
-    /c/$python_name/Scripts/scons -u -j${n_parallel} $local_build config=$config \
-        $ci_build --debug=time --fupKey=Development target=$target ${hwopt} \
+    echo /c/$python_name/Scripts/scons \
+        -u -j${n_parallel} \
+        $local_build \
+        config=$config \
+        $ci_build --debug=time \
+        target=$target ${hwopt} \
+        ${extra_scons_opts}
+    /c/$python_name/Scripts/scons \
+        -u -j${n_parallel} \
+        $local_build \
+        config=$config \
+        $ci_build --debug=time \
+        target=$target ${hwopt} \
         ${extra_scons_opts} 2>&1 \
         | tee -a /tmp/picasso-build.log
 
