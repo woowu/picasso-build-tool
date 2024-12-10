@@ -1,6 +1,6 @@
 #!/bin/bash
 
-config=debug
+config=
 target=
 mcu=
 do_clean=no
@@ -17,11 +17,11 @@ copy_only=no
 python_name=Python39
 
 n_parallel=$((n_parallel - 2))
-if [ $n_parallel -lt 1 ]; then
-    n_parallel=1
+if [ $n_parallel -lt 2 ]; then
+    n_parallel=$n_parallel
 fi
-if [ $n_parallel -gt 12 ]; then
-    n_parallel=12
+if [ $n_parallel -gt 8 ]; then
+    n_parallel=8
 fi
 
 PARAMS=""
@@ -72,7 +72,12 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -z)
-            extra_scons_opts+=" --compression-algo=LZSS"
+            extra_scons_opts+=" --compression-algo=$2"
+            shift
+            shift
+            ;;
+        --container)
+            extra_scons_opts+=" --create-container-format"
             shift
             ;;
         -l)
@@ -115,6 +120,10 @@ while [ $# -gt 0 ]; do
 done
 eval set -- "$PARAMS"
 
+if [ -z "$config" ]; then
+    echo "no config specified"
+    exit 1
+fi
 if [ -z "$target" ]; then
     echo "no target specified"
     exit 1
@@ -185,7 +194,7 @@ function build () {
         config=$config \
         $ci_build --debug=time \
         target=$target ${hwopt} \
-        ${extra_scons_opts}
+        ${extra_scons_opts} | tee -a /tmp/picasso-build.log
     /c/$python_name/Scripts/scons \
         -u -j${n_parallel} \
         $local_build \

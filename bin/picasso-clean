@@ -1,5 +1,22 @@
 #!/bin/bash
 
+full=
+
+PARAMS=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -f|--full)
+            full=yes
+            shift
+            ;;
+        *)
+            PARAMS="$PARAMS $1"
+            shift
+            ;;
+    esac
+done
+eval set -- "$PARAMS"
+
 find . -type d -name "_out" -exec rm -rf {} \+
 find . -type d -name "Log" -exec rm -rf {} \+
 find . -type d -name "__pycache__" -exec rm -rf {} \+
@@ -7,11 +24,13 @@ find . \( -name "*.o" -o -name "*.bin" -o -name "*.out" -o -name "*.hex" -o -nam
 find . -name Generated -type d -exec rm -rf {} \;
 git restore -- Product/7_EXE/E3551Ph/Peripherals/Ims2Binary/Ims2Binary.bin
 git restore -- Product/7_EXE/E3553Ph/Peripherals/Ims2Binary/Ims2Binary.bin
-cd Platform
-git restore
-git clean -df .
-cd ..
+if [ "$full" = "yes" ]; then
+    cd Platform
+    git restore .
+    git clean -df .
+    cd ..
+fi
 cd Platform/5_SVC/DLMS/ThirdParty/DlmsCore
-git restore
+git restore .
 git clean -df .
 cd ..

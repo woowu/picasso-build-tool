@@ -1,0 +1,44 @@
+#!/bin/bash
+
+config=
+target=
+
+PARAMS=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -t|--target)
+            target=$2
+            shift
+            shift
+            ;;
+        -c|--config)
+            config=$2
+            shift
+            shift
+            ;;
+        -*|--*)
+            echo "unsuported flag $1" >&2
+            exit 1
+            ;;
+        *)
+            PARAMS="$PARAMS $1"
+            shift
+            ;;
+    esac
+done
+eval set -- "$PARAMS"
+
+if [ -z "$config" ]; then
+    echo "no config specified"
+    exit 1
+fi
+if [ -z "$target" ]; then
+    echo "no target specified"
+    exit 1
+fi
+
+tar czvf Product/7_EXE/$target/_out/${target}-all-binaries-${config}.tgz \
+   Product/7_EXE/$target/_out/$config \
+   Product/7_EXE/$target/Module*/_out/$config \
+   Product/7_EXE/$target/System/_out/$config \
+   Product/7_EXE/$target/BootLoader/_out/$config
