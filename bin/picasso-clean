@@ -17,6 +17,8 @@ while [ $# -gt 0 ]; do
 done
 eval set -- "$PARAMS"
 
+# Product folder
+#
 find . -type d -name "_out" -exec rm -rf {} \+
 find . -type d -name "Log" -exec rm -rf {} \+
 find . -type d -name "__pycache__" -exec rm -rf {} \+
@@ -24,6 +26,13 @@ find . \( -name "*.o" -o -name "*.bin" -o -name "*.out" -o -name "*.hex" -o -nam
 find . -name Generated -type d -exec rm -rf {} \;
 git restore -- Product/7_EXE/E3551Ph/Peripherals/Ims2Binary/Ims2Binary.bin
 git restore -- Product/7_EXE/E3553Ph/Peripherals/Ims2Binary/Ims2Binary.bin
+git restore '**/*.ewp'
+git restore '**/*.ew[dpt]'
+rm -rf Product/Build/Settings/IarWorkbench/RX_420/Debug
+rm -rf Product/Build/Settings/IarWorkbench/RX_420/Release
+
+# Platform folder
+#
 if [ "$full" = "yes" ]; then
     cd Platform
     git restore .
