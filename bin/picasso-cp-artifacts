@@ -1,0 +1,9 @@
+#!/bin/bash
+
+name=$(basename `pwd`)
+mkdir -p ~/quick-sync/${name}
+dest_dir=~/quick-sync/${name}
+
+find Product/ -name "*.map" -exec cp {} ${dest_dir} \;
+find Product/ -name "*.out" -exec cp {} ${dest_dir} \;
+
