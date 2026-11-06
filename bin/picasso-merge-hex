@@ -3,6 +3,7 @@
 target=
 config=
 with_modules=no
+output_bin=no
 mcu=
 
 get_firmware_id() {
@@ -42,6 +43,10 @@ while [ $# -gt 0 ]; do
         -M|--mcu)
             mcu=$2
             shift 2
+            ;;
+        -B|--binary)
+            output_bin=yes
+            shift 1
             ;;
         *)
             PARAMS="$PARAMS $1"
@@ -115,8 +120,15 @@ cd ..
 
 name=combined-${target}-${config}-${combined_id}-`date +%Y%m%d-%H%M`
 echo $name
-srec_cat ${bootldr} -intel \
-    ${system} -intel \
-    ${modules_opt} \
-    -o $name.hex -intel \
-    --line-length=44
+if [ "$output_bin" == "yes" ]; then
+    srec_cat ${bootldr} -intel \
+        ${system} -intel \
+        ${modules_opt} \
+        -o $name.bin -Binary
+else
+    srec_cat ${bootldr} -intel \
+        ${system} -intel \
+        ${modules_opt} \
+        -o $name.hex -intel \
+        --line-length=44
+fi
